@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — Contextale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #1a5fb4;
+  --primary-dark: #134a8e;
+  --primary-deeper: #0d3566;
+  --primary-light: rgba(26,95,180,0.08);
+  --bg: #f7f8fb;
+  --text: #1e2a3a;
+  --text-muted: #5a6a7a;
+  --text-light: #8a95a5;
+  --card-bg: #ffffff;
+  --border: #dfe3ea;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+code {
+  font-size: 0.85em;
+  background: var(--primary-light);
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: var(--primary-dark);
+}
+
+.container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ===== HEADER ===== */
+.header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-deeper) 100%);
+  padding: 80px 0 60px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.header-logo {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+  display: inline-block;
+  margin-bottom: 32px;
+  transition: color 0.2s;
+}
+.header-logo:hover { color: #fff; }
+
+.header h1 {
+  font-size: 2.2rem;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.header .updated {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.5);
+}
+
+/* ===== CONTENT ===== */
+.content {
+  padding: 60px 0 100px;
+}
+
+.tldr {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px 36px;
+  margin-bottom: 56px;
+  position: relative;
+}
+
+.tldr::before {
+  content: 'TL;DR';
+  position: absolute;
+  top: -11px;
+  left: 32px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 3px 12px;
+  border-radius: 100px;
+}
+
+.tldr p {
+  font-size: 1.05rem;
+  color: var(--text);
+  line-height: 1.8;
+}
+
+.tldr strong {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Sections */
+.policy-section {
+  margin-bottom: 48px;
+}
+
+.policy-section h2 {
+  font-size: 1.25rem;
+  color: var(--text);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--primary-light);
+}
+
+.policy-section p {
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.policy-section p strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.policy-section a {
+  color: var(--primary);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(26,95,180,0.3);
+  transition: border-color 0.2s;
+}
+.policy-section a:hover {
+  border-bottom-color: var(--primary);
+}
+
+/* Data items grid */
+.data-items {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.data-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.data-item .icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+}
+
+/* We don't list */
+.dont-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.dont-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(68,170,68,0.04);
+  border: 1px solid rgba(68,170,68,0.15);
+  border-radius: 10px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.dont-item .check {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  background: rgba(68,170,68,0.12);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: #44aa44;
+}
+
+/* Google Translate callout */
+.callout {
+  background: var(--primary-light);
+  border-left: 3px solid var(--primary);
+  border-radius: 0 10px 10px 0;
+  padding: 20px 24px;
+  margin: 20px 0;
+}
+
+.callout p {
+  color: var(--text) !important;
+  margin-bottom: 0 !important;
+  font-size: 0.9rem !important;
+}
+
+.callout .service-name {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  text-align: center;
+  padding: 40px 0;
+  border-top: 1px solid var(--border);
+}
+
+.footer-logo {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.footer p {
+  font-size: 0.82rem;
+  color: var(--text-light);
+}
+
+.footer a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+  .header { padding: 60px 0 48px; }
+  .header h1 { font-size: 1.6rem; }
+  .tldr { padding: 28px 24px; }
+  .data-items, .dont-list { grid-template-columns: 1fr; }
+  .content { padding: 40px 0 60px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="container">
+    <a href="contextale.html" class="header-logo">&#8592; Contextale</a>
+    <h1>Privacy Policy</h1>
+    <div class="updated">Last updated: February 16, 2026</div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+  <div class="container">
+
+    <!-- TL;DR -->
+    <div class="tldr">
+      <p>Your words, your data, <strong>your device</strong>. Contextale stores everything locally in your browser. We don't have servers, we don't track you, we don't collect personal information. The only external service is Google Translate — and only when you ask for it.</p>
+    </div>
+
+    <!-- WHAT WE COLLECT -->
+    <div class="policy-section">
+      <h2>What data Contextale stores</h2>
+      <p>All of the following is stored locally on your device using Chrome's built-in storage (<code>chrome.storage</code>). None of it leaves your browser.</p>
+      <div class="data-items">
+        <div class="data-item">
+          <div class="icon">📝</div>
+          <span>Words you save and their translations</span>
+        </div>
+        <div class="data-item">
+          <div class="icon">💬</div>
+          <span>Context sentences from web pages</span>
+        </div>
+        <div class="data-item">
+          <div class="icon">🔗</div>
+          <span>Page titles, site names, and URLs of sources</span>
+        </div>
+        <div class="data-item">
+          <div class="icon">📊</div>
+          <span>Learning progress, quiz scores, study time</span>
+        </div>
+        <div class="data-item">
+          <div class="icon">⚙️</div>
+          <span>Extension settings and language preferences</span>
+        </div>
+        <div class="data-item">
+          <div class="icon">🌙</div>
+          <span>Display preferences like dark mode</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- THIRD PARTY -->
+    <div class="policy-section">
+      <h2>Third-party services</h2>
+      <div class="callout">
+        <p>Contextale uses the <span class="service-name">Google Translate API</span> to translate words and context sentences. When you click "Translate", the selected text is sent to Google's translation service. This is the only time any data leaves your device. <a href="https://policies.google.com/privacy">Google's Privacy Policy</a> applies to this data.</p>
+      </div>
+    </div>
+
+    <!-- WHAT WE DON'T DO -->
+    <div class="policy-section">
+      <h2>What we don't do</h2>
+      <div class="dont-list">
+        <div class="dont-item">
+          <div class="check">&#10003;</div>
+          <span>No personal information collected</span>
+        </div>
+        <div class="dont-item">
+          <div class="check">&#10003;</div>
+          <span>No browsing activity tracked</span>
+        </div>
+        <div class="dont-item">
+          <div class="check">&#10003;</div>
+          <span>No analytics or tracking tools</span>
+        </div>
+        <div class="dont-item">
+          <div class="check">&#10003;</div>
+          <span>No data shared with third parties</span>
+        </div>
+        <div class="dont-item">
+          <div class="check">&#10003;</div>
+          <span>No registration or account required</span>
+        </div>
+        <div class="dont-item">
+          <div class="check">&#10003;</div>
+          <span>No external servers used for storage</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- YOUR CONTROL -->
+    <div class="policy-section">
+      <h2>Data export and deletion</h2>
+      <p>You're in full control of your data. Export all saved words at any time from <strong>Settings</strong>. Delete everything from <strong>Settings &#8594; Danger Zone &#8594; Clear All Words</strong>. When you uninstall the extension, all data is automatically removed.</p>
+    </div>
+
+    <!-- CONTACT -->
+    <div class="policy-section">
+      <h2>Contact</h2>
+      <p>Questions about this policy? Reach us at <a href="mailto:contextale@gmail.com">contextale@gmail.com</a></p>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="container">
+    <a href="contextale.html" class="footer-logo">Contextale</a>
+    <p>Context is everything. That's why it's in the name.</p>
+    <p style="margin-top: 4px;"><a href="mailto:contextale@gmail.com">contextale@gmail.com</a></p>
+  </div>
+</div>
+
+</body>
+</html>
