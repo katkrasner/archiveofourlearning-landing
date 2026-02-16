@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Archive of Our Learning — Learn Languages from Fanfiction</title>
+<meta name="description" content="A Chrome extension that turns reading fanfiction on AO3 into language learning. Instant translation, context-aware flashcards, spaced repetition.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+   CSS CUSTOM PROPERTIES
+   ============================================ */
+:root {
+  --maroon: #990000;
+  --maroon-light: #cc1a1a;
+  --maroon-dark: #660000;
+  --maroon-glow: rgba(153, 0, 0, 0.4);
+  --maroon-subtle: rgba(153, 0, 0, 0.08);
+  --bg-primary: #0a0a0b;
+  --bg-secondary: #111113;
+  --bg-card: rgba(255, 255, 255, 0.03);
+  --bg-card-hover: rgba(255, 255, 255, 0.06);
+  --bg-glass: rgba(17, 17, 19, 0.7);
+  --text-primary: #e8e4e0;
+  --text-secondary: rgba(232, 228, 224, 0.6);
+  --text-muted: rgba(232, 228, 224, 0.35);
+  --border: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.12);
+  --green: #4a9;
+  --green-glow: rgba(68, 170, 136, 0.3);
+  --blue-tag: rgba(100, 160, 220, 0.15);
+  --blue-tag-text: #7ab0e0;
+  --pink-tag: rgba(200, 120, 160, 0.15);
+  --pink-tag-text: #d89ab8;
+  --font-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ============================================
+   RESET & BASE
+   ============================================ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+::selection {
+  background: var(--maroon);
+  color: white;
+}
+
+a { color: inherit; text-decoration: none; }
+
+img { max-width: 100%; display: block; }
+
+/* ============================================
+   NAVIGATION
+   ============================================ */
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 1rem 2rem;
+  transition: all 0.5s var(--ease-out);
+}
+
+.nav.scrolled {
+  background: rgba(10, 10, 11, 0.85);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.nav-logo-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, var(--maroon), var(--maroon-dark));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  box-shadow: 0 2px 12px var(--maroon-glow);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  list-style: none;
+}
+
+.nav-links a {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  transition: color 0.3s;
+  letter-spacing: 0.02em;
+}
+
+.nav-links a:hover { color: var(--text-primary); }
+
+.nav-cta {
+  padding: 0.5rem 1.25rem;
+  background: var(--maroon);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: white !important;
+  transition: all 0.3s var(--ease-out);
+  box-shadow: 0 2px 12px var(--maroon-glow);
+}
+
+.nav-cta:hover {
+  background: var(--maroon-light);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px var(--maroon-glow);
+}
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 8rem 2rem 4rem;
+  position: relative;
+}
+
+/* Radial glow behind hero */
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(153, 0, 0, 0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 2.5rem;
+  backdrop-filter: blur(10px);
+}
+
+.hero-badge-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--green-glow);
+  animation: pulse-dot 2s ease infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.hero h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 400;
+  line-height: 1.15;
+  max-width: 850px;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.5rem;
+}
+
+.hero h1 em {
+  font-style: italic;
+  color: var(--maroon-light);
+  font-weight: 500;
+}
+
+.hero-subtitle {
+  font-size: clamp(1rem, 1.8vw, 1.15rem);
+  color: var(--text-secondary);
+  max-width: 580px;
+  line-height: 1.7;
+  margin-bottom: 2.5rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.9rem 2rem;
+  background: var(--maroon);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.4s var(--ease-out);
+  box-shadow: 0 4px 24px var(--maroon-glow), inset 0 1px 0 rgba(255,255,255,0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.1), transparent);
+  pointer-events: none;
+}
+
+.btn-primary:hover {
+  background: var(--maroon-light);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(153, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+.btn-primary:active { transform: translateY(0); }
+
+.btn-chrome-icon {
+  width: 20px;
+  height: 20px;
+  opacity: 0.9;
+}
+
+.hero-trust {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+/* Hero mockup */
+.hero-mockup {
+  margin-top: 4rem;
+  width: 100%;
+  max-width: 800px;
+  position: relative;
+}
+
+.mockup-window {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 24px 80px rgba(0,0,0,0.5),
+    0 0 120px rgba(153, 0, 0, 0.08);
+}
+
+.mockup-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.02);
+  border-bottom: 1px solid var(--border);
+}
+
+.mockup-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+}
+
+.mockup-dot:nth-child(1) { background: #ff5f57; }
+.mockup-dot:nth-child(2) { background: #febc2e; }
+.mockup-dot:nth-child(3) { background: #28c840; }
+
+.mockup-url {
+  flex: 1;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.03);
+  padding: 4px 12px;
+  border-radius: 6px;
+  margin-left: 40px;
+  margin-right: 72px;
+}
+
+.mockup-content {
+  padding: 2.5rem 3rem;
+  position: relative;
+  font-size: 0.95rem;
+  line-height: 2;
+  color: var(--text-secondary);
+  min-height: 200px;
+}
+
+.mockup-ao3-header {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+.mockup-ao3-author {
+  color: var(--maroon-light);
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.mockup-ao3-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1.5rem;
+}
+
+.mockup-tag {
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.mockup-tag.fandom { background: var(--blue-tag); color: var(--blue-tag-text); }
+.mockup-tag.ship { background: var(--pink-tag); color: var(--pink-tag-text); }
+.mockup-tag.rating { background: rgba(153,0,0,0.15); color: #d88; }
+
+.mockup-text-line {
+  margin-bottom: 0.5rem;
+}
+
+.mockup-highlighted-word {
+  background: rgba(153, 0, 0, 0.25);
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--maroon);
+  padding: 0 2px;
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+}
+
+/* Extension popup mockup */
+.mockup-popup {
+  position: absolute;
+  top: 55%;
+  right: 8%;
+  width: 280px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-hover);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.6), 0 0 40px rgba(153,0,0,0.1);
+  animation: popup-float 6s ease-in-out infinite;
+  z-index: 2;
+}
+
+@keyframes popup-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.mockup-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.mockup-popup-word {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.mockup-popup-lang {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.mockup-popup-translation {
+  color: var(--maroon-light);
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.mockup-popup-context {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  padding: 0.6rem;
+  background: var(--bg-card);
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  border-left: 2px solid var(--maroon);
+}
+
+.mockup-popup-context em {
+  color: var(--text-primary);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.mockup-popup-btn {
+  width: 100%;
+  padding: 0.5rem;
+  background: var(--maroon);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: default;
+  box-shadow: 0 2px 8px var(--maroon-glow);
+}
+
+/* Glow orb behind mockup */
+.mockup-glow {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(153,0,0,0.15), transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ============================================
+   SCROLL REVEAL
+   ============================================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-delay-5 { transition-delay: 0.5s; }
+
+/* ============================================
+   SECTION LAYOUT
+   ============================================ */
+section {
+  padding: 6rem 2rem;
+  position: relative;
+}
+
+.section-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--maroon-light);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+
+.section-subtitle {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  max-width: 550px;
+  line-height: 1.7;
+}
+
+/* ============================================
+   ORIGIN STORY
+   ============================================ */
+.origin {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.origin-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.origin-quote {
+  font-family: var(--font-serif);
+  font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+  line-height: 1.7;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--text-primary);
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.origin-quote::before {
+  content: '"';
+  position: absolute;
+  top: -2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 5rem;
+  color: var(--maroon);
+  opacity: 0.3;
+  font-style: normal;
+  line-height: 1;
+}
+
+.origin-name {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+.origin-name span {
+  color: var(--maroon-light);
+}
+
+.origin-social {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.origin-upvotes {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--maroon-light);
+  font-weight: 600;
+}
+
+/* ============================================
+   HOW IT WORKS
+   ============================================ */
+.how-it-works {
+  overflow: hidden;
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin-top: 3.5rem;
+}
+
+.step-card {
+  position: relative;
+  padding: 2rem 1.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  transition: all 0.4s var(--ease-out);
+  overflow: hidden;
+}
+
+.step-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--maroon), transparent);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.step-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+  transform: translateY(-4px);
+}
+
+.step-card:hover::before { opacity: 1; }
+
+.step-number {
+  font-family: var(--font-serif);
+  font-size: 3rem;
+  font-weight: 300;
+  color: var(--maroon);
+  opacity: 0.4;
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+
+.step-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--maroon-subtle);
+  border: 1px solid rgba(153,0,0,0.15);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  margin-bottom: 1.25rem;
+}
+
+.step-card h3 {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.step-card p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Connecting line */
+.steps-connector {
+  display: none;
+}
+
+/* ============================================
+   FEATURES
+   ============================================ */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-top: 3.5rem;
+}
+
+.feature-card {
+  padding: 2.5rem;
+  background: var(--bg-primary);
+  transition: all 0.4s var(--ease-out);
+  position: relative;
+}
+
+.feature-card:hover {
+  background: var(--bg-secondary);
+}
+
+.feature-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 2.5rem;
+  right: 2.5rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--maroon), transparent);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.feature-card:hover::after { opacity: 0.5; }
+
+.feature-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin-bottom: 1.25rem;
+  background: var(--maroon-subtle);
+  border-radius: 12px;
+  border: 1px solid rgba(153,0,0,0.1);
+}
+
+.feature-card h3 {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin-bottom: 0.6rem;
+  letter-spacing: -0.01em;
+}
+
+.feature-card p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.feature-tag {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.feature-tag.sm2 { background: rgba(153,0,0,0.12); color: #d88; }
+.feature-tag.smart { background: rgba(68,170,136,0.12); color: var(--green); }
+
+/* ============================================
+   GUESS THE SHIP
+   ============================================ */
+.guess-ship {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.guess-ship .section-inner {
+  text-align: center;
+}
+
+.guess-ship .section-subtitle {
+  margin: 0 auto 3rem;
+}
+
+.ship-game {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.ship-round {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  transition: all 0.4s var(--ease-out);
+  cursor: pointer;
+}
+
+.ship-round:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-card-hover);
+}
+
+.ship-word {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 500;
+  margin-bottom: 1.25rem;
+  color: var(--maroon-light);
+}
+
+.ship-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.ship-option {
+  padding: 0.5rem 1.2rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  transition: all 0.3s var(--ease-out);
+  cursor: pointer;
+}
+
+.ship-option:hover {
+  border-color: var(--maroon);
+  color: var(--text-primary);
+  background: var(--maroon-subtle);
+}
+
+.ship-option.correct {
+  border-color: var(--maroon);
+  color: white;
+  background: var(--maroon);
+  box-shadow: 0 2px 12px var(--maroon-glow);
+}
+
+.ship-option.wrong {
+  opacity: 0.3;
+  border-color: transparent;
+}
+
+.ship-result {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.4s var(--ease-out);
+}
+
+.ship-result.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ship-result em {
+  color: var(--maroon-light);
+  font-style: normal;
+}
+
+/* ============================================
+   PRIVACY
+   ============================================ */
+.privacy {
+  position: relative;
+}
+
+.privacy-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  margin-top: 3rem;
+}
+
+.privacy-features {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.privacy-item {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.privacy-icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 1.1rem;
+}
+
+.privacy-item h4 {
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 0.15rem;
+}
+
+.privacy-item p {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.privacy-lockscreen {
+  position: relative;
+}
+
+.lockscreen-mockup {
+  background: linear-gradient(145deg, #1a1610, #0f0d0a);
+  border: 1px solid rgba(180, 160, 120, 0.15);
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.lockscreen-mockup::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.lockscreen-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.lockscreen-title {
+  font-family: var(--font-serif);
+  font-size: 1.8rem;
+  font-style: italic;
+  color: rgba(200, 180, 140, 0.9);
+  margin-bottom: 0.5rem;
+}
+
+.lockscreen-sub {
+  font-size: 0.8rem;
+  color: rgba(200, 180, 140, 0.4);
+  margin-bottom: 2rem;
+}
+
+.lockscreen-input {
+  width: 80%;
+  padding: 0.7rem 1rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(180, 160, 120, 0.2);
+  border-radius: 8px;
+  color: rgba(200, 180, 140, 0.6);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  text-align: center;
+  outline: none;
+  margin-bottom: 1rem;
+}
+
+.lockscreen-hint {
+  font-size: 0.7rem;
+  color: rgba(200, 180, 140, 0.25);
+  font-style: italic;
+}
+
+.privacy-quote {
+  margin-top: 2rem;
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ============================================
+   LANGUAGES
+   ============================================ */
+.languages-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 3rem;
+}
+
+.lang-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 0.9rem;
+  transition: all 0.3s var(--ease-out);
+}
+
+.lang-chip:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+}
+
+.lang-flag {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+/* ============================================
+   COMPARISON TABLE
+   ============================================ */
+.comparison {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.comparison .section-inner { text-align: center; }
+.comparison .section-subtitle { margin: 0 auto; }
+
+.comparison-table-wrap {
+  margin-top: 3rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  font-size: 0.85rem;
+  min-width: 700px;
+}
+
+.comparison-table thead th {
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+  font-weight: 500;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  background: rgba(255,255,255,0.02);
+  border-bottom: 1px solid var(--border);
+}
+
+.comparison-table thead th:first-child {
+  text-align: left;
+  width: 35%;
+}
+
+.comparison-table thead th.highlight {
+  color: var(--maroon-light);
+  background: rgba(153,0,0,0.05);
+  font-weight: 600;
+  position: relative;
+}
+
+.comparison-table thead th.highlight::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--maroon);
+}
+
+.comparison-table tbody td {
+  padding: 1rem 1.5rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.comparison-table tbody td:first-child {
+  text-align: left;
+  color: var(--text-primary);
+  font-weight: 400;
+}
+
+.comparison-table tbody td.highlight {
+  background: rgba(153,0,0,0.03);
+}
+
+.comparison-table tbody tr:last-child td { border-bottom: none; }
+
+.check { color: var(--maroon-light); font-weight: 600; font-size: 1rem; }
+.partial { color: var(--text-muted); font-size: 0.8rem; }
+.none { color: var(--text-muted); }
+
+/* ============================================
+   FINAL CTA
+   ============================================ */
+.final-cta {
+  text-align: center;
+  padding: 8rem 2rem;
+  position: relative;
+}
+
+.final-cta::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(153,0,0,0.1), transparent 70%);
+  pointer-events: none;
+}
+
+.final-cta .section-title {
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
+  margin-bottom: 1rem;
+}
+
+.final-cta .section-subtitle {
+  margin: 0 auto 2.5rem;
+  text-align: center;
+}
+
+.final-cta-note {
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-made {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.footer-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+}
+
+.footer-links a {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  transition: color 0.3s;
+}
+
+.footer-links a:hover { color: var(--text-primary); }
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+@media (max-width: 900px) {
+  .steps-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .privacy-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  .nav-links { display: none; }
+}
+
+@media (max-width: 640px) {
+  section { padding: 4rem 1.25rem; }
+
+  .hero { padding: 7rem 1.25rem 3rem; }
+
+  .hero h1 { font-size: 2.2rem; }
+
+  .steps-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-card { padding: 1.75rem; }
+
+  .mockup-content {
+    padding: 1.5rem;
+    font-size: 0.85rem;
+  }
+
+  .mockup-popup {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin: 1.5rem auto 0;
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .mockup-ao3-header { font-size: 1.2rem; }
+
+  .comparison-table-wrap {
+    margin-left: -1.25rem;
+    margin-right: -1.25rem;
+    padding: 0 1.25rem;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .ship-word { font-size: 1.5rem; }
+
+  .ship-options { gap: 0.4rem; }
+
+  .ship-option { padding: 0.4rem 0.9rem; font-size: 0.8rem; }
+
+  .lockscreen-mockup { padding: 2rem 1.5rem; }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes hero-text-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-badge { animation: hero-text-in 0.8s var(--ease-out) 0.2s both; }
+.hero h1 { animation: hero-text-in 0.8s var(--ease-out) 0.35s both; }
+.hero-subtitle { animation: hero-text-in 0.8s var(--ease-out) 0.5s both; }
+.hero-actions { animation: hero-text-in 0.8s var(--ease-out) 0.65s both; }
+.hero-mockup { animation: hero-text-in 1s var(--ease-out) 0.85s both; }
+
+/* Subtle line decorations */
+.line-decoration {
+  position: absolute;
+  width: 1px;
+  height: 80px;
+  background: linear-gradient(to bottom, transparent, var(--maroon), transparent);
+  opacity: 0.2;
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================
+     NAVIGATION
+     ============================================ -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-icon">✒</div>
+      Archive of Our Learning
+    </a>
+    <ul class="nav-links">
+      <li><a href="#how-it-works">How it works</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#privacy">Privacy</a></li>
+      <li><a href="#languages">Languages</a></li>
+      <li><a href="#" class="nav-cta">Add to Chrome</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ============================================
+     HERO
+     ============================================ -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="hero-badge-dot"></span>
+    Chrome Extension &middot; Free &middot; v1.2
+  </div>
+
+  <h1>You've been telling everyone you read fics <em>to learn English.</em><br>Now it's actually true.</h1>
+
+  <p class="hero-subtitle">A Chrome extension that turns reading on AO3 into language learning&hairsp;&mdash;&hairsp;with instant translation, context&#8209;aware flashcards, and spaced repetition.</p>
+
+  <div class="hero-actions">
+    <a href="#" class="btn-primary">
+      <svg class="btn-chrome-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="10" stroke="white" stroke-width="1.5" opacity="0.3"/>
+        <circle cx="12" cy="12" r="4" fill="white" opacity="0.9"/>
+      </svg>
+      Add to Chrome — Free
+    </a>
+    <span class="hero-trust">No account. No tracking. Everything stays on your device.</span>
+  </div>
+
+  <!-- Mockup -->
+  <div class="hero-mockup">
+    <div class="mockup-glow"></div>
+    <div class="mockup-window">
+      <div class="mockup-titlebar">
+        <div class="mockup-dot"></div>
+        <div class="mockup-dot"></div>
+        <div class="mockup-dot"></div>
+        <div class="mockup-url">archiveofourown.org/works/48291037</div>
+      </div>
+      <div class="mockup-content">
+        <div class="mockup-ao3-header">The Weight of Unspoken Things</div>
+        <div class="mockup-ao3-author">by constellation_writer</div>
+        <div class="mockup-ao3-tags">
+          <span class="mockup-tag fandom">Harry Potter</span>
+          <span class="mockup-tag ship">Draco/Harry</span>
+          <span class="mockup-tag rating">Mature</span>
+        </div>
+        <div class="mockup-text-line">The corridor was empty save for the echo of his footsteps, each one a</div>
+        <div class="mockup-text-line"><span class="mockup-highlighted-word">reluctant</span> confession whispered to the ancient stones. Draco pressed his</div>
+        <div class="mockup-text-line">palm against the cold wall, feeling the castle's <span class="mockup-highlighted-word" style="border-bottom-color: var(--green);">familiar</span> hum beneath</div>
+        <div class="mockup-text-line">his fingertips — a <span class="mockup-highlighted-word">tremulous</span> vibration, like a held breath.</div>
+
+        <!-- Extension popup -->
+        <div class="mockup-popup">
+          <div class="mockup-popup-header">
+            <span class="mockup-popup-word">reluctant</span>
+            <span class="mockup-popup-lang">EN → RU</span>
+          </div>
+          <div class="mockup-popup-translation">неохотный, нерешительный</div>
+          <div class="mockup-popup-context">
+            "...each one a <em>reluctant</em> confession whispered to the ancient stones."
+          </div>
+          <div class="mockup-popup-btn">+ Add to Dictionary</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     ORIGIN STORY
+     ============================================ -->
+<section class="origin">
+  <div class="origin-inner reveal">
+    <blockquote class="origin-quote">
+      I've been reading fics in English for years, telling everyone I'm doing it to learn the language. I'd write down unfamiliar words and cool phrases&hairsp;&mdash;&hairsp;almost never returning to&nbsp;them.<br><br>
+      Then IELTS happened. So I built a Chrome extension to organize my&nbsp;notes.<br>And got a little carried away.
+    </blockquote>
+    <p class="origin-name">It's called <span>Archive of Our Learning</span> because I thought I was being clever.</p>
+    <div class="origin-social">
+      <span class="origin-upvotes">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2l5 6H9v6H7V8H3l5-6z"/></svg>
+        84
+      </span>
+      <span>upvotes on r/AO3</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     HOW IT WORKS
+     ============================================ -->
+<section class="how-it-works" id="how-it-works">
+  <div class="section-inner">
+    <div class="reveal">
+      <span class="section-label">How it works</span>
+      <h2 class="section-title">Four steps. Zero context switching.</h2>
+      <p class="section-subtitle">Keep reading. The learning happens in the margins.</p>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step-card reveal reveal-delay-1">
+        <div class="step-number">01</div>
+        <div class="step-icon">✦</div>
+        <h3>Highlight</h3>
+        <p>Select any word or phrase while reading a fic on AO3. A translate button appears instantly.</p>
+      </div>
+      <div class="step-card reveal reveal-delay-2">
+        <div class="step-number">02</div>
+        <div class="step-icon">↗</div>
+        <h3>Translate</h3>
+        <p>Get translation in context — not just the word, but the word <em>as it's used in the sentence</em>. Edit if needed.</p>
+      </div>
+      <div class="step-card reveal reveal-delay-3">
+        <div class="step-number">03</div>
+        <div class="step-icon">◈</div>
+        <h3>Save</h3>
+        <p>One click saves the word with its sentence, fic title, author, fandom, pairing, and rating.</p>
+      </div>
+      <div class="step-card reveal reveal-delay-4">
+        <div class="step-number">04</div>
+        <div class="step-icon">⟲</div>
+        <h3>Remember</h3>
+        <p>Flashcards and quizzes with SM-2 spaced repetition bring words back exactly when you'd forget them.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     FEATURES
+     ============================================ -->
+<section class="features" id="features">
+  <div class="section-inner">
+    <div class="reveal">
+      <span class="section-label">Features</span>
+      <h2 class="section-title">Everything you need. Nothing you don't.</h2>
+    </div>
+
+    <div class="features-grid reveal">
+      <div class="feature-card">
+        <div class="feature-icon">📖</div>
+        <h3>Context-Aware Dictionary</h3>
+        <p>Every word is stored with the sentence you found it in, the fic, the author, the fandom, and the pairing. Because context is everything.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🃏</div>
+        <h3>Flashcards & Quizzes</h3>
+        <p>Flip cards. Multiple choice. Keyboard shortcuts. Spaced repetition schedules reviews so you remember long-term.</p>
+        <span class="feature-tag sm2">SM-2 algorithm</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Difficulty Badge</h3>
+        <p>See how challenging a fic is for your level before you start. Personalized based on your growing vocabulary.</p>
+        <span class="feature-tag smart">Adaptive</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✨</div>
+        <h3>Word Highlighting</h3>
+        <p>Your saved words glow on AO3 pages. Red underline means learning. Green means learned. Hover for instant translation.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏆</div>
+        <h3>Fandom Achievements</h3>
+        <p>Unlock achievements tied to pairings, fandoms, and ratings. Your reading habits are trophies now.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📈</div>
+        <h3>Stats Dashboard</h3>
+        <p>Words saved. Words learned. Fics contributed. Study time. Daily goal. See your progress at a glance.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     GUESS THE SHIP
+     ============================================ -->
+<section class="guess-ship" id="guess-ship">
+  <div class="section-inner">
+    <div class="reveal">
+      <span class="section-label">Mini-game</span>
+      <h2 class="section-title">Your vocabulary tells a story<br>about your ships.</h2>
+      <p class="section-subtitle">Can you guess the pairing from the words people saved?</p>
+    </div>
+
+    <div class="ship-game reveal">
+      <!-- Round 1 -->
+      <div class="ship-round" data-correct="1">
+        <div class="ship-word">patronus</div>
+        <div class="ship-options">
+          <div class="ship-option" data-index="0">Bakudeku</div>
+          <div class="ship-option" data-index="1">Drarry</div>
+          <div class="ship-option" data-index="2">Destiel</div>
+          <div class="ship-option" data-index="3">Zutara</div>
+        </div>
+        <div class="ship-result">Most saved from <em>Harry Potter</em> fics featuring Draco Malfoy / Harry Potter</div>
+      </div>
+
+      <!-- Round 2 -->
+      <div class="ship-round" data-correct="2">
+        <div class="ship-word">impala</div>
+        <div class="ship-options">
+          <div class="ship-option" data-index="0">Solangelo</div>
+          <div class="ship-option" data-index="1">Wolfstar</div>
+          <div class="ship-option" data-index="2">Destiel</div>
+          <div class="ship-option" data-index="3">Sterek</div>
+        </div>
+        <div class="ship-result">A classic <em>Supernatural</em> word — Dean Winchester / Castiel shippers know this one</div>
+      </div>
+
+      <!-- Round 3 -->
+      <div class="ship-round" data-correct="0">
+        <div class="ship-word">quirk</div>
+        <div class="ship-options">
+          <div class="ship-option" data-index="0">Bakudeku</div>
+          <div class="ship-option" data-index="1">Ereri</div>
+          <div class="ship-option" data-index="2">Klance</div>
+          <div class="ship-option" data-index="3">Drarry</div>
+        </div>
+        <div class="ship-result">Straight from <em>My Hero Academia</em> — Bakugou Katsuki / Midoriya Izuku territory</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     PRIVACY
+     ============================================ -->
+<section class="privacy" id="privacy">
+  <div class="section-inner">
+    <div class="reveal">
+      <span class="section-label">Privacy</span>
+      <h2 class="section-title">We know what you're reading.<br>And we don't judge.</h2>
+    </div>
+
+    <div class="privacy-grid">
+      <div class="privacy-features reveal">
+        <div class="privacy-item">
+          <div class="privacy-icon">🔒</div>
+          <div>
+            <h4>100% local storage</h4>
+            <p>All your data lives on your device. No servers, no cloud, no sync. Your words are yours alone.</p>
+          </div>
+        </div>
+        <div class="privacy-item">
+          <div class="privacy-icon">👤</div>
+          <div>
+            <h4>No account required</h4>
+            <p>Install and start using. No email, no sign-up, no "continue with Google." Ever.</p>
+          </div>
+        </div>
+        <div class="privacy-item">
+          <div class="privacy-icon">📊</div>
+          <div>
+            <h4>Zero analytics</h4>
+            <p>No tracking pixels, no telemetry, no usage data collection. We literally can't see what you do.</p>
+          </div>
+        </div>
+        <div class="privacy-item">
+          <div class="privacy-icon">🔑</div>
+          <div>
+            <h4>Password lock</h4>
+            <p>Optional password protection with auto-lock timer. For when you share a computer. Or just for peace of mind.</p>
+          </div>
+        </div>
+        <div class="privacy-item">
+          <div class="privacy-icon">📦</div>
+          <div>
+            <h4>Export anytime</h4>
+            <p>Download your entire word collection as a JSON file. Import it back anytime. You own your data.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="privacy-lockscreen reveal reveal-delay-2">
+        <div class="lockscreen-mockup">
+          <div class="lockscreen-icon">🗝</div>
+          <div class="lockscreen-title">Mischief Managed</div>
+          <div class="lockscreen-sub">This extension is locked</div>
+          <input class="lockscreen-input" type="password" value="••••••••" disabled>
+          <div class="lockscreen-hint">Hint: "The password is always the same"</div>
+        </div>
+        <p class="privacy-quote">"Dark mode because we read at 3am like civilized people."</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     LANGUAGES
+     ============================================ -->
+<section class="languages" id="languages">
+  <div class="section-inner" style="text-align: center;">
+    <div class="reveal">
+      <span class="section-label">Languages</span>
+      <h2 class="section-title">Works with your language.</h2>
+      <p class="section-subtitle" style="margin: 0 auto;">Switch between language pairs anytime without losing your dictionary. Interface available in English, Spanish, and Russian.</p>
+    </div>
+
+    <div class="languages-grid reveal">
+      <div class="lang-chip"><span class="lang-flag">🇷🇺</span> Russian</div>
+      <div class="lang-chip"><span class="lang-flag">🇨🇳</span> Chinese</div>
+      <div class="lang-chip"><span class="lang-flag">🇰🇷</span> Korean</div>
+      <div class="lang-chip"><span class="lang-flag">🇺🇦</span> Ukrainian</div>
+      <div class="lang-chip"><span class="lang-flag">🇮🇱</span> Hebrew</div>
+      <div class="lang-chip"><span class="lang-flag">🇸🇦</span> Arabic</div>
+      <div class="lang-chip"><span class="lang-flag">🇩🇪</span> German</div>
+      <div class="lang-chip"><span class="lang-flag">🇵🇱</span> Polish</div>
+      <div class="lang-chip"><span class="lang-flag">🇫🇷</span> French</div>
+      <div class="lang-chip"><span class="lang-flag">🇪🇸</span> Spanish</div>
+      <div class="lang-chip"><span class="lang-flag">🇮🇹</span> Italian</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     COMPARISON TABLE
+     ============================================ -->
+<section class="comparison" id="comparison">
+  <div class="section-inner">
+    <div class="reveal">
+      <span class="section-label">Comparison</span>
+      <h2 class="section-title">Not another Duolingo.</h2>
+      <p class="section-subtitle">All the same features as everyone else — except on actually useful content.</p>
+    </div>
+
+    <div class="comparison-table-wrap reveal">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="highlight">Archive of Our Learning</th>
+            <th>Duolingo</th>
+            <th>Anki</th>
+            <th>Google Translate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>One-click translate on AO3</td>
+            <td class="highlight"><span class="check">✓</span></td>
+            <td><span class="none">—</span></td>
+            <td><span class="none">—</span></td>
+            <td><span class="check">✓</span></td>
+          </tr>
+          <tr>
+            <td>Save word with fic context</td>
+            <td class="highlight"><span class="check">✓</span></td>
+            <td><span class="none">—</span></td>
+            <td><span class="none">—</span></td>
+            <td><span class="none">—</span></td>
+          </tr>
+          <tr>
+            <td>Spaced repetition (SM-2)</td>
+            <td class="highlight"><span class="check">✓</span></td>
+            <td><span class="partial">partial</span></td>
+            <td><span class="check">✓</span></td>
+            <td><span class="none">—</span></td>
+          </tr>
+          <tr>
+            <td>Fandom & pairing metadata</td>
+            <td class="highlight"><span class="check">✓</span></td>
+            <td><span class="none">—</span></td>
+            <td><span class="none">—</span></td>
+            <td><span class="none">—</span></td>
+          </tr>
+          <tr>
+            <td>Text difficulty analysis</td>
+            <td class="highlight"><span class="check">✓</span></td>
+            <td><span class="none">—</span></td>
+            <td><span class="none">—</span></td>
+            <td><span class="none">—</span></td>
+          </tr>
+          <tr>
+            <td>Word highlighting on page</td>
+            <td class="highlight"><span class="check">✓</span></td>
+            <td><span class="none">—</span></td>
+            <td><span class="none">—</span></td>
+            <td><span class="none">—</span></td>
+          </tr>
+          <tr>
+            <td>Gamification & achievements</td>
+            <td class="highlight"><span class="check">✓</span></td>
+            <td><span class="check">✓</span></td>
+            <td><span class="none">—</span></td>
+            <td><span class="none">—</span></td>
+          </tr>
+          <tr>
+            <td>100% local data</td>
+            <td class="highlight"><span class="check">✓</span></td>
+            <td><span class="none">—</span></td>
+            <td><span class="none">—</span></td>
+            <td><span class="none">—</span></td>
+          </tr>
+          <tr>
+            <td>Free</td>
+            <td class="highlight"><span class="check">✓</span></td>
+            <td><span class="partial">freemium</span></td>
+            <td><span class="check">✓</span></td>
+            <td><span class="check">✓</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     FINAL CTA
+     ============================================ -->
+<section class="final-cta">
+  <div class="section-inner reveal">
+    <h2 class="section-title">Start learning from<br>your next fic.</h2>
+    <p class="section-subtitle">Install in seconds. Start saving words immediately. No sign-up needed.</p>
+    <a href="#" class="btn-primary">
+      <svg class="btn-chrome-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="10" stroke="white" stroke-width="1.5" opacity="0.3"/>
+        <circle cx="12" cy="12" r="4" fill="white" opacity="0.9"/>
+      </svg>
+      Add to Chrome — Free
+    </a>
+    <p class="final-cta-note">Chrome only for now. More platforms coming.</p>
+  </div>
+</section>
+
+<!-- ============================================
+     FOOTER
+     ============================================ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <span class="footer-made">Made by someone who got a little carried away.</span>
+    <ul class="footer-links">
+      <li><a href="#">Chrome Web Store</a></li>
+      <li><a href="#">GitHub</a></li>
+      <li><a href="#">Feedback</a></li>
+    </ul>
+  </div>
+</footer>
+
+<!-- ============================================
+     JAVASCRIPT
+     ============================================ -->
+<script>
+// ---- Navigation scroll effect ----
+const nav = document.getElementById('nav');
+let lastScroll = 0;
+
+window.addEventListener('scroll', () => {
+  const scrollY = window.scrollY;
+  nav.classList.toggle('scrolled', scrollY > 50);
+  lastScroll = scrollY;
+}, { passive: true });
+
+// ---- Scroll reveal (Intersection Observer) ----
+const revealElements = document.querySelectorAll('.reveal');
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, {
+  threshold: 0.15,
+  rootMargin: '0px 0px -40px 0px'
+});
+
+revealElements.forEach(el => revealObserver.observe(el));
+
+// ---- Guess the Ship game ----
+document.querySelectorAll('.ship-round').forEach(round => {
+  const correctIndex = parseInt(round.dataset.correct);
+  const options = round.querySelectorAll('.ship-option');
+  const result = round.querySelector('.ship-result');
+  let answered = false;
+
+  options.forEach(option => {
+    option.addEventListener('click', () => {
+      if (answered) return;
+      answered = true;
+
+      const index = parseInt(option.dataset.index);
+
+      if (index === correctIndex) {
+        option.classList.add('correct');
+      } else {
+        option.classList.add('wrong');
+        options[correctIndex].classList.add('correct');
+      }
+
+      // Dim non-selected wrong options
+      options.forEach(opt => {
+        if (!opt.classList.contains('correct') && opt !== option) {
+          opt.classList.add('wrong');
+        }
+      });
+
+      result.classList.add('show');
+    });
+  });
+});
+
+// ---- Smooth scroll for nav links ----
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// ---- Parallax for hero glow ----
+const heroGlow = document.querySelector('.mockup-glow');
+if (heroGlow) {
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+    if (scrollY < window.innerHeight) {
+      heroGlow.style.transform = `translate(-50%, calc(-50% + ${scrollY * 0.15}px))`;
+    }
+  }, { passive: true });
+}
+</script>
+</body>
+</html>
