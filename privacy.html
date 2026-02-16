@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — Archive of Our Learning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --maroon: #990000;
+  --bg: #0a0a0b;
+  --bg-card: rgba(255,255,255,0.03);
+  --text: #e8e4e0;
+  --text-secondary: rgba(232,228,224,0.6);
+  --text-muted: rgba(232,228,224,0.35);
+  --border: rgba(255,255,255,0.06);
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { -webkit-font-smoothing: antialiased; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.8;
+  min-height: 100vh;
+}
+
+::selection { background: var(--maroon); color: white; }
+a { color: var(--maroon); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 4rem 2rem 6rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 3rem;
+  transition: color 0.3s;
+}
+.back-link:hover { color: var(--text); text-decoration: none; }
+
+h1 {
+  font-family: var(--font-serif);
+  font-size: 2.5rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.last-updated {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 3rem;
+}
+
+h2 {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+}
+
+p, li {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+ul {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+li { margin-bottom: 0.5rem; }
+
+strong { color: var(--text); font-weight: 500; }
+
+.highlight-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--maroon);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.highlight-box p {
+  margin-bottom: 0;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.footer-note {
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+@media (max-width: 640px) {
+  .container { padding: 3rem 1.25rem 4rem; }
+  h1 { font-size: 2rem; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<a href="index.html" class="back-link">← Back to Archive of Our Learning</a>
+
+<h1>Privacy Policy</h1>
+<p class="last-updated">Last updated: February 16, 2026</p>
+
+<div class="highlight-box">
+  <p><strong>TL;DR:</strong> We don't collect, store, or transmit any of your personal data. Everything stays on your device. We literally cannot see what you do.</p>
+</div>
+
+<h2>Who we are</h2>
+<p><strong>Archive of Our Learning</strong> is a Chrome browser extension that helps users learn vocabulary while reading on Archive of Our Own (AO3). This privacy policy explains how the extension handles your data.</p>
+
+<h2>What data we collect</h2>
+<p><strong>None.</strong> Archive of Our Learning does not collect, transmit, or store any user data on external servers. There is no account system, no analytics, no telemetry, and no tracking of any kind.</p>
+
+<h2>Data stored locally on your device</h2>
+<p>The extension stores the following data in your browser's local storage (Chrome Storage API). This data never leaves your device:</p>
+<ul>
+  <li><strong>Saved words and translations</strong> — words you choose to save, their translations, and the context sentences you found them in</li>
+  <li><strong>Metadata from AO3 pages</strong> — fic title, author name, fic URL, fandom tags, relationship/pairing tags, and content rating for works where you saved words</li>
+  <li><strong>Learning progress</strong> — review history, spaced repetition scheduling data, and quiz results</li>
+  <li><strong>Extension settings</strong> — your language preferences, display settings, study preferences, and optional password hash</li>
+  <li><strong>Statistics</strong> — word counts, study time, and daily goal progress</li>
+</ul>
+
+<h2>Third-party services</h2>
+<p>The extension uses <strong>Google Translate API</strong> (translate.googleapis.com) to provide translations. When you request a translation:</p>
+<ul>
+  <li>The selected word or phrase and its surrounding sentence are sent to Google Translate</li>
+  <li>This is a direct request from your browser to Google's servers</li>
+  <li>We do not proxy, intercept, or log these requests</li>
+  <li>Google's own privacy policy applies to the translation service: <a href="https://policies.google.com/privacy" target="_blank">policies.google.com/privacy</a></li>
+</ul>
+<p>No other third-party services are used.</p>
+
+<h2>Website access</h2>
+<p>The extension requires access to <strong>archiveofourown.org</strong> to function. It reads text content on AO3 pages to enable word selection, translation, and word highlighting. The extension does not:</p>
+<ul>
+  <li>Access your AO3 account credentials</li>
+  <li>Read or modify your AO3 bookmarks, history, or preferences</li>
+  <li>Interact with AO3's servers beyond what your browser normally does</li>
+  <li>Access any websites other than archiveofourown.org and translate.googleapis.com</li>
+</ul>
+
+<h2>Password protection</h2>
+<p>The extension offers an optional password lock feature. If enabled:</p>
+<ul>
+  <li>Your password is hashed locally and stored in Chrome's local storage</li>
+  <li>The password hash never leaves your device</li>
+  <li>There is no password recovery mechanism — if you forget your password, you will need to reinstall the extension</li>
+</ul>
+
+<h2>Data export and deletion</h2>
+<ul>
+  <li><strong>Export:</strong> You can export your entire word collection as a JSON file at any time through the extension's Settings tab</li>
+  <li><strong>Import:</strong> You can import previously exported data</li>
+  <li><strong>Delete:</strong> You can delete all saved words and reset all progress through the Settings tab. Uninstalling the extension also removes all data</li>
+</ul>
+
+<h2>Children's privacy</h2>
+<p>Archive of Our Learning does not knowingly collect any data from anyone, including children under 13. Since no data is collected or transmitted, COPPA compliance is inherent in the extension's design.</p>
+
+<h2>Changes to this policy</h2>
+<p>If this privacy policy is updated, the changes will be reflected on this page with an updated "Last updated" date. Since the extension collects no data, significant changes are unlikely.</p>
+
+<h2>Contact</h2>
+<p>If you have questions about this privacy policy, you can reach out via:</p>
+<ul>
+  <li>GitHub: <a href="https://github.com/katkrasner/archiveofourlearning" target="_blank">github.com/katkrasner/archiveofourlearning</a></li>
+</ul>
+
+<p class="footer-note">We know what you're reading. And we don't judge. — Archive of Our Learning</p>
+
+</div>
+</body>
+</html>
